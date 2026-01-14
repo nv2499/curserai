@@ -1,0 +1,31 @@
+name: Test SSH Connection
+
+on:
+  workflow_dispatch: # สามารถรันได้ด้วยตนเอง
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test-connection.yml' # รันเมื่อไฟล์นี้เปลี่ยน
+
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Test SSH Connection
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            echo "🎉 เชื่อมต่อสำเร็จ!"
+            echo "📍 Hostname: $(hostname)"
+            echo "👤 User: $(whoami)"
+            echo "📂 Current directory: $(pwd)"
+            echo "📅 Date: $(date)"
+            echo ""
+            echo "✅ GitHub Actions สามารถเชื่อมต่อไปยังเซิร์ฟเวอร์ได้แล้ว!"

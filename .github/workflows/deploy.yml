@@ -1,0 +1,36 @@
+name: Auto Deploy to Linux Server
+
+on:
+  push:
+    branches: [ main ] # เมื่อมีการ push ไปที่ branch main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /var/www/fullstack-app
+            git pull origin main
+            
+            # จัดการ Backend
+            cd backend
+            npm install
+            npx prisma generate
+            npx prisma migrate deploy
+            pm2 restart api-service
+
+            # จัดการ Frontend
+            cd ../frontend
+            npm install
+            npm run build
+            # ไฟล์จะถูก build และพร้อมใช้งานผ่าน Nginx ทันที
