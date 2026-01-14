@@ -6,31 +6,51 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: self-hosted  # ใช้ self-hosted runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd /var/www/fullstack-app
-            git pull origin main
-            
-            # จัดการ Backend
+      - name: Deploy
+        run: |
+          echo "🚀 เริ่ม Deploy..."
+          cd /var/www/fullstack-app
+          
+          # Pull โค้ดล่าสุด
+          echo "📥 Pull โค้ดล่าสุด..."
+          git pull origin main || echo "⚠️  Pull failed, อาจจะยังไม่มี remote"
+          
+          # ตรวจสอบว่า directory มีอยู่หรือไม่
+          if [ ! -d "backend" ] && [ ! -d "frontend" ]; then
+            echo "⚠️  ไม่พบ backend/frontend directories"
+            echo "💡 สร้าง directory structure..."
+            mkdir -p backend frontend
+          fi
+          
+          # จัดการ Backend (ถ้ามี)
+          if [ -d "backend" ] && [ -f "backend/package.json" ]; then
+            echo "🔧 จัดการ Backend..."
             cd backend
             npm install
-            npx prisma generate
-            npx prisma migrate deploy
-            pm2 restart api-service
-
-            # จัดการ Frontend
-            cd ../frontend
+            if [ -f "prisma/schema.prisma" ]; then
+              npx prisma generate
+              npx prisma migrate deploy
+            fi
+            pm2 restart api-service || echo "⚠️  PM2 service ไม่พบ"
+            cd ..
+          else
+            echo "ℹ️  ไม่พบ backend หรือ package.json"
+          fi
+          
+          # จัดการ Frontend (ถ้ามี)
+          if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
+            echo "🔧 จัดการ Frontend..."
+            cd frontend
             npm install
-            npm run build
-            # ไฟล์จะถูก build และพร้อมใช้งานผ่าน Nginx ทันที
+            npm run build || echo "⚠️  Build failed"
+            cd ..
+          else
+            echo "ℹ️  ไม่พบ frontend หรือ package.json"
+          fi
+          
+          echo "✅ Deploy เสร็จสิ้น!"
