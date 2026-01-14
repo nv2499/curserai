@@ -1,0 +1,27 @@
+name: Test SSH Connection (Self-Hosted)
+
+on:
+  workflow_dispatch: # สามารถรันได้ด้วยตนเอง
+
+jobs:
+  test-connection:
+    runs-on: self-hosted  # ใช้ self-hosted runner แทน ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Test SSH Connection
+        run: |
+          echo "🎉 เชื่อมต่อสำเร็จ!"
+          echo "📍 Hostname: $(hostname)"
+          echo "👤 User: $(whoami)"
+          echo "📂 Current directory: $(pwd)"
+          echo "📅 Date: $(date)"
+          echo ""
+          echo "✅ GitHub Actions ทำงานบนเซิร์ฟเวอร์นี้แล้ว!"
+          echo ""
+          echo "🔍 ตรวจสอบ tools:"
+          echo "   Git: $(git --version 2>/dev/null || echo 'ไม่พบ')"
+          echo "   Node: $(node --version 2>/dev/null || echo 'ไม่พบ')"
+          echo "   NPM: $(npm --version 2>/dev/null || echo 'ไม่พบ')"
+          echo "   PM2: $(pm2 --version 2>/dev/null || echo 'ไม่พบ')"
