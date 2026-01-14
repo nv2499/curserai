@@ -21,6 +21,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
+          script_stop: true
+          timeout: 30s
           script: |
             echo "🎉 เชื่อมต่อสำเร็จ!"
             echo "📍 Hostname: $(hostname)"
